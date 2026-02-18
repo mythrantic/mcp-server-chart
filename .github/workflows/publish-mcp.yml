@@ -13,16 +13,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install validation deps
-        run: |
-          python -m pip install --upgrade pip
-          pip install jsonschema jq
       
       - name: Extract version from server.json
         run: |
@@ -31,7 +21,7 @@ jobs:
           echo "SERVER_VERSION=$SERVER_VERSION" >> $GITHUB_ENV
           echo "Using server.json version: $SERVER_VERSION"
 
-      - name: Normalize server.json & sync pyproject.toml
+      - name: Normalize server.json
         run: |
           set -e
           # Ensure required fields and empty packages for simplified publish
@@ -39,12 +29,7 @@ jobs:
           # Use --arg instead of strenv (strenv failed when env var not exported in runner)
           jq --arg ver "$SERVER_VERSION" '.name="com.valiantlynx/mcp-server-chart" | .packages = (.packages // []) | .version=$ver' server.json > server.tmp.json
           mv server.tmp.json server.json
-          PY_VERSION=$(grep -E '^version\s*=\s*"' pyproject.toml | head -1 | sed -E 's/version\s*=\s*"([^"]+)"/\1/')
-          if [ "$PY_VERSION" != "$SERVER_VERSION" ]; then
-            echo "Syncing pyproject.toml version to $SERVER_VERSION"
-            sed -i "s/^version = \"$PY_VERSION\"/version = \"$SERVER_VERSION\"/" pyproject.toml
-          fi
-          echo "server.json and pyproject.toml normalized."
+          echo "server.json normalized."
           
       - name: Download MCP Publisher
         run: |
