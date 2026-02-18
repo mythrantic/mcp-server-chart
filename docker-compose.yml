@@ -1,0 +1,25 @@
+services:
+  mcp-server-chart:
+    build:
+      context: ./mcp-server-chart
+      dockerfile: Dockerfile
+    expose:
+      - 1122
+    environment:
+      - VIS_REQUEST_SERVER=https://mcp-server-chart-vis.valiantlynx.com/api/gpt-vis
+      - VIS_DOMAIN=https://mcp-server-chart-vis.valiantlynx.com
+    restart: unless-stopped
+    container_name: mcp-server-chart
+
+  gpt-vis-ssr:
+    build:
+      context: ./gpt-vis-ssr
+      dockerfile: Dockerfile
+    expose:
+      - 3000
+    restart: unless-stopped
+    container_name: gpt-vis-ssr
+
+networks:
+  dokploy-network:
+    external: true
