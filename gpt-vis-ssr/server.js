@@ -48,18 +48,22 @@ app.post('/api/gpt-vis', async (req, res) => {
       console.log(`Image already exists: ${filename}`);
     }
     
-    // Convert to base64 data URL
+    // Convert to base64 data URL (kept for callers that prefer an inline image)
     const base64 = buffer.toString('base64');
     const dataUrl = `data:image/png;base64,${base64}`;
     
     // Generate URL path
     const imageUrl = `${HOST}/images/${filename}`;
     
-    // Send response with both base64 data and URL
+    // Send response. resultObj is what mcp-server-chart echoes back to the client as
+    // the tool result, so it must be the short public URL, not the base64 blob:
+    // a data URL costs tens of thousands of tokens per chart. dataUrl stays available
+    // as a separate field for callers that want the image inline.
     res.json({
       success: true,
-      resultObj: dataUrl,
+      resultObj: imageUrl,
       imageUrl: imageUrl,
+      dataUrl: dataUrl,
       filename: filename,
       errorMessage: null
     });
